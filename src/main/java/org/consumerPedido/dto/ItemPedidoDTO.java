@@ -1,11 +1,13 @@
 package org.consumerPedido.dto;
 
+import lombok.Data;
 import lombok.Getter;
 
 import java.io.Serializable;
 
 @Getter
-public class ItemPedidoDTO implements Serializable {
+@Data
+public class ItemPedidoDTO {
 
     private Integer produto;
     private Integer quantidade;
