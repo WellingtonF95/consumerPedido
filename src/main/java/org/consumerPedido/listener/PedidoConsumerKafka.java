@@ -1,6 +1,7 @@
 package org.consumerPedido.listener;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.consumerPedido.config.KafkaConfig;
 import org.consumerPedido.dto.PedidoDTO;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.listener.AcknowledgingMessageListener;
@@ -10,9 +11,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class PedidoConsumerKafka implements AcknowledgingMessageListener<String, PedidoDTO> {
 
+
     @Override
-    @KafkaListener(topics = "${spring.kafka.topic}", groupId = "group",
-            containerFactory = "pedidoConcurrentKafkaListenerContainerFactory")
+    @KafkaListener(topics = "${spring.kafka.consumer.topic}", groupId = "group",
+            containerFactory = KafkaConfig.KAFKA_CONTAINER_FACTORY)
     public void onMessage(ConsumerRecord<String, PedidoDTO> data, Acknowledgment acknowledgment) {
         try {
             PedidoDTO dto = data.value();

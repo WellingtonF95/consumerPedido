@@ -28,58 +28,36 @@ public class KafkaConfig {
 
     public static final String KAFKA_CONTAINER_FACTORY = "kafkaContainerFactory";
 
-    @Value("spring.kafka.bootstrap-servers")
+    @Value("${spring.kafka.bootstrap-server}")
     private String bootstrapServers;
 
-    @Value("spring.kafka.consumer.key-deserializer")
+    @Value("${spring.kafka.consumer.key-deserializer}")
     private String keyDeserializer;
 
-    @Value("spring.kafka.consumer.value-deserializer")
+    @Value("${spring.kafka.consumer.value-deserializer}")
     private String valueDeserializer;
 
-    @Value("spring.kafka.consumer.auto-offset-reset")
+    @Value("${spring.kafka.consumer.auto-offset-reset}")
     private String offsetReset;
 
     @Bean
-    public ConsumerFactory<String, String> consumerFactory(KafkaProperties kafkaProperties) {
-       /* Map<String, Object> props = new HashMap<>();
+    public ConsumerFactory<String, PedidoDTO> pedidoConsumerFactory() {
+        Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, offsetReset);
-        props.put(JsonDeserializer.KEY_DEFAULT_TYPE, false);
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, false);
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");*/
 
-        return new DefaultKafkaConsumerFactory<>(
-                kafkaProperties.buildConsumerProperties(), new StringDeserializer(), new JsonDeserializer<>(String.class));
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(PedidoDTO.class, false));
     }
 
-    @Bean
-    public ConsumerFactory<String, PedidoDTO> pedidoConsumerFactory(KafkaProperties kafkaProperties) {
-        return new DefaultKafkaConsumerFactory<>(
-                kafkaProperties.buildConsumerProperties(), new StringDeserializer(), new JsonDeserializer<>(PedidoDTO.class));
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, PedidoDTO> pedidoConcurrentKafkaListenerContainerFactory(KafkaProperties kafkaProperties) {
+    @Bean(name = KAFKA_CONTAINER_FACTORY)
+    public ConcurrentKafkaListenerContainerFactory<String, PedidoDTO> pedidoConcurrentKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, PedidoDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(pedidoConsumerFactory(kafkaProperties));
+        factory.setConsumerFactory(pedidoConsumerFactory());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         return factory;
     }
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory(KafkaProperties kafkaProperties) {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory(kafkaProperties));
-
-        return factory;
-    }
-
-    @Bean
-    public StringJsonMessageConverter jsonMessageConverter() {
-        return new StringJsonMessageConverter();
-    }
 }
