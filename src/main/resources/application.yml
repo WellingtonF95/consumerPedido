@@ -3,11 +3,12 @@ server:
 
 spring:
   kafka:
-    bootstrap-server: localhost:9092
+    bootstrap-server: PLAINTEXT://localhost:29092
+    schema-registry-url: http://localhost:8081
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      auto-offset-reset: latest
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      auto-offset-reset: earliest
       topic: topico.pedidos
   #RABBITMQ
   rabbitmq:
