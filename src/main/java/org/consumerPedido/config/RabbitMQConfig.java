@@ -28,9 +28,24 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public FanoutExchange fanoutExchange() {
+        FanoutExchange fanoutExchange = new FanoutExchange(EXCHANGE_PEDIDO);
+        fanoutExchange.setAdminsThatShouldDeclare(amqpAdmin);
+        return fanoutExchange;
+    }
+
+    @Bean
+    public FanoutExchange fanoutExchangeDlx() {
+        FanoutExchange fanoutExchange = new FanoutExchange(EXCHANGE_PEDIDO_DLX);
+        fanoutExchange.setAdminsThatShouldDeclare(amqpAdmin);
+        return fanoutExchange;
+    }
+
+    @Bean
     public Queue queue() {
         Map<String, Object> args = new HashMap<>();
         args.put(X_DEAD_LETTER_EXCHANGE, EXCHANGE_PEDIDO_DLX);
+        args.put(X_DEAD_LETTER_ROUTING_KEY, QUEUE_PEDIDO_DLQ);
         Queue queue = new Queue(QUEUE_PEDIDO, true, false,false, args);
         queue.setAdminsThatShouldDeclare(amqpAdmin);
         return queue;
@@ -44,10 +59,25 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public DirectExchange directExchange() {
-        DirectExchange directExchange = new DirectExchange(EXCHANGE_PEDIDO);
-        directExchange.setAdminsThatShouldDeclare(amqpAdmin);
-        return directExchange;
+    public Binding bindingQueuePedido() {
+        Queue queue = queue();
+        FanoutExchange exchange = fanoutExchange();
+        Binding binding = BindingBuilder
+                .bind(queue)
+                .to(exchange);
+        binding.setAdminsThatShouldDeclare(amqpAdmin);
+        return binding;
+    }
+
+    @Bean
+    public Binding bindingQueuePedidoDlq() {
+        Queue queue = queuePedidoDlq();
+        FanoutExchange exchange = fanoutExchangeDlx();
+        Binding binding = BindingBuilder
+                .bind(queue)
+                .to(exchange);
+        binding.setAdminsThatShouldDeclare(amqpAdmin);
+        return binding;
     }
 
     @Bean
@@ -55,24 +85,6 @@ public class RabbitMQConfig {
         DirectExchange exchange = new DirectExchange(EXCHANGE_PEDIDO_DLX);
         exchange.setAdminsThatShouldDeclare(amqpAdmin);
         return exchange;
-    }
-
-    @Bean
-    public Binding bindingQueuePedido() {
-        Binding binding = BindingBuilder.bind(queue())
-                .to(directExchange())
-                .with(X_DEAD_LETTER_ROUTING_KEY);
-        binding.setAdminsThatShouldDeclare(amqpAdmin);
-        return binding;
-    }
-
-    @Bean
-    public Binding bindingQueuePedidoDlq() {
-        Binding binding = BindingBuilder.bind(queuePedidoDlq())
-                .to(directExchangeDLX())
-                .with(X_DEAD_LETTER_EXCHANGE);
-        binding.setAdminsThatShouldDeclare(amqpAdmin);
-        return binding;
     }
 
     @Bean

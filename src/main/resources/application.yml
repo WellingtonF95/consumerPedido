@@ -1,7 +1,15 @@
 server:
-  port: 8090
-#RABBITMQ
+  port: 8091
+
 spring:
+  kafka:
+    bootstrap-server: localhost:9092
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: latest
+      topic: topico.pedidos
+  #RABBITMQ
   rabbitmq:
     host: localhost
     port: 5672
@@ -10,8 +18,8 @@ spring:
     listener:
       simple:
         default-requeue-rejected: 'false' #desabilita a tentativa de consumir a mensagem, evitando um looping no reprocessamento
-        retry:
-          enabled: 'true' #habilita o retry
-          max-attemps: '3' #numero de tentativas = 3
-          initial-interval: 5s #em um intervalo de 5 segundos
-          multiplier: '2' #multiplicando o intervalo de 5 segundos por 2
+        #retry:
+          #enabled: 'true' #habilita o retry
+          #max-attempts: '3' #numero de tentativas = 3
+          #initial-interval: 5s #em um intervalo de 5 segundos
+          #multiplier: '2' #multiplicando o intervalo de 5 segundos por 2
